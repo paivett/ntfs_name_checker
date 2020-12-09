@@ -36,7 +36,8 @@ def contains_invalid_chars(filename):
 
 
 def has_invalid_name(filename):
-    return filename.endswith(" ") or contains_invalid_chars(filename)
+    bad_ending = filename.endswith(" ") or filename.endswith(".")
+    return bad_ending or contains_invalid_chars(filename)
 
 
 def get_curated_name(filename, replace_with):
