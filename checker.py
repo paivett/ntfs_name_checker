@@ -40,8 +40,8 @@ def has_invalid_name(filename):
     return bad_ending or contains_invalid_chars(filename)
 
 
-def get_curated_name(filename, replace_with):
-    new_filename = _INVALID_CHARS_PATTERN.sub(replace_with, filename.strip())
+def get_curated_name(filename, sub_string):
+    new_filename = _INVALID_CHARS_PATTERN.sub(sub_string, filename.strip())
 
     return new_filename
 
@@ -49,26 +49,24 @@ def get_curated_name(filename, replace_with):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("base_path", help="path to recursively search for files with invalid name", type=str)
-    parser.add_argument("-r", "--replace_with", help="replace invalid chars with this string", type=str, default="_")
+    parser.add_argument("-s", "--sub_string", help="substitute invalid chars with this string", type=str, default="_")
     parser.add_argument("-q", "--quite", help="do not print to stdout", action="store_true")
-    parser.add_argument("-l", "--only-list", help="do not rename files, only list", action="store_true")
+    parser.add_argument("-r", "--rename", help="rename files and dirs with string", action="store_true")
 
     args = parser.parse_args()
 
     if args.quite:
         logger.removeHandler(stdout_handler)
 
-    renamed_count = 0
+    paths_to_rename = [
+        path for path in Path(args.base_path).rglob("*")
+        if has_invalid_name(path.name)
+    ]
 
-    for path in Path(args.base_path).rglob("*"):
-        if has_invalid_name(path.name):
-            logger.info("Invalid name: '%s'", path)
+    for path in paths_to_rename[::-1]:
+        logger.info("Invalid path: '%s'", path)
 
-            if not args.only_list:
-                new_path = path.parent / get_curated_name(path.name, args.replace_with)
-                logger.info("Renaming to '%s'", new_path)
-                path.rename(new_path)
-
-            renamed_count += 1
-    
-    logger.info("Found %s invalid files", renamed_count)
+        if args.rename:
+            new_path = path.parent / get_curated_name(path.name, args.sub_string)
+            path.rename(new_path)
+            logger.info("Renamed to '%s'", new_path)
