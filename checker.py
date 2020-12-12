@@ -41,7 +41,7 @@ def has_invalid_name(filename):
 
 
 def get_curated_name(filename, sub_string):
-    new_filename = _INVALID_CHARS_PATTERN.sub(sub_string, filename.strip())
+    new_filename = _INVALID_CHARS_PATTERN.sub(sub_string, filename.strip(" ."))
 
     return new_filename
 
